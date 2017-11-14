@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+  <Appenders>
+    <Console name="Console">
+      <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+    </Console>
+  </Appenders>
+  <Loggers>
+    <Root level="DEBUG">
+      <AppenderRef ref="Console"/>
+    </Root>
+    <logger name="org.springframework.jdbc.core" level="DEBUG" additivity="false">
+        <AppenderRef ref="Console"/>
+    </logger>
+    <logger name="org.hibernate" level="INFO" additivity="false">
+        <AppenderRef ref="Console"/>
+    </logger>
+    <!-- For hibernate query plans -->
+<!--    <logger name="org.hibernate.loader.plan.build.spi.LoadPlanTreePrinter" level="DEBUG" additivity="false">
+        <AppenderRef ref="Console"/>
+    </logger>
+    
+   <logger name="org.hibernate.loader.entity.plan.EntityLoader" level="DEBUG" additivity="false">
+        <AppenderRef ref="Console"/>
+    </logger>
+    <logger name="org.hibernate.event.internal" level="TRACE" additivity="false">
+        <AppenderRef ref="Console"/>
+    </logger>-->
+    
+    <!-- For sql parameter values-->
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE" additivity="false">
+        <AppenderRef ref="Console"/>
+    </logger>
+  </Loggers>
+</Configuration>

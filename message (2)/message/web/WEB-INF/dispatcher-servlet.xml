@@ -1,0 +1,147 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!-- was: <?xml version="1.0" encoding="UTF-8"?> -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+       http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+       http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd
+       http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-4.0.xsd">
+    
+    <context:component-scan base-package="com.source.controller, com.source.task, com.source.services" />
+    
+    <bean id="contentNegotiationManager"
+             class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean">
+        <property name="favorPathExtension" value="true" />
+        <property name="favorParameter" value="false" />
+        <property name="ignoreAcceptHeader" value="true"/>
+        <property name="useJaf" value="false"/>
+        <property name="defaultContentType" value="application/json" />
+
+        <property name="mediaTypes">
+            <map>
+                <entry key="json" value="application/json" />
+           </map>
+        </property>
+    </bean>
+
+    <!--<bean id="searchMappingAnnotationResolver" class="com.Bypro.framework.search.SearchMappingAnnotationResolver"></bean>-->
+    
+    <!--<bean id="mappingJackson2MessageConverter" class="org.springframework.messaging.converter.MappingJackson2MessageConverter"></bean> --> <!-- Needless explicit declaration -->
+    
+    <bean id="sourceObjectMapper" class="org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean">
+        <property name="serializers">
+            <array>
+                <bean class="com.Manoj.framework.FixedJsonViewSerializer" />
+            </array>
+        </property>
+    </bean>
+    <bean id="acmObjectMapper" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="targetObject" ref="sourceObjectMapper"/>
+        <property name="targetMethod" value="disable"/>
+        <property name="arguments">
+            <array>
+                <value>WRITE_DATES_AS_TIMESTAMPS</value>
+            </array>
+        </property>
+    </bean>
+    <bean id="mappingJackson2MessageConverter" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+        <property name="objectMapper">
+            <ref bean="acmObjectMapper" />
+        </property>
+    </bean>
+    
+    <mvc:annotation-driven content-negotiation-manager="contentNegotiationManager">
+        <mvc:argument-resolvers>
+            <bean class="com.Manoj.framework.search.SearchMappingAnnotationResolver" />
+        </mvc:argument-resolvers>
+        <mvc:message-converters>
+            <ref bean="mappingJackson2MessageConverter" />
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+    
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter"></bean> <!-- Needless explicit declaration -->
+    
+    <bean id="multipartResolver"
+        class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!-- max upload size in bytes -->
+        <property name="maxUploadSize" value="20971520" /> <!-- 20MB -->
+         
+        <!-- max size of file in memory (in bytes) -->
+        <property name="maxInMemorySize" value="1048576" /> <!-- 1MB -->
+ 
+    </bean>
+
+    <!--<bean class="org.springframework.web.servlet.mvc.support.ControllerClassNameHandlerMapping"/>-->
+    <!--<bean id="trialController" class="com.Bypro.controller.TrialController"/>-->
+
+    <!--
+    Most controllers will use the ControllerClassNameHandlerMapping above, but
+    for the index controller we are using ParameterizableViewController, so we must
+    define an explicit mapping for it.
+    -->
+<!--    <bean id="urlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+        <property name="mappings">
+            <props>
+                <prop key="index.htm">indexController</prop>
+            </props>
+        </property>
+    </bean>-->
+
+    <bean id="viewResolver"
+          class="org.springframework.web.servlet.view.InternalResourceViewResolver"
+          p:prefix="/WEB-INF/jsp/"
+          p:suffix=".jsp" />
+
+    <!--
+    The index controller.
+    -->
+    <bean name="indexController"
+          class="org.springframework.web.servlet.mvc.ParameterizableViewController"
+          p:viewName="index" />
+    
+    <bean id="authenticationEntryPoint" 
+        class="com.Manoj.framework.security.AppAuthenticationEntryPoint" />
+    
+    <bean id="authenticationSuccessHandler" 
+        class="com.Manoj.framework.security.AppAuthenticationSuccessHandler" />
+    
+    <bean id="authenticationFailureHandler" 
+        class="com.Manoj.framework.security.AppAuthenticationFailureHandler" />
+    
+    <bean id="logoutSuccessHandler" 
+        class="com.Manoj.framework.security.AppLogoutSuccessHandler" />
+    
+    <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean" 
+                p:targetClass="org.springframework.security.core.context.SecurityContextHolder" 
+                p:targetMethod="setStrategyName" 
+                p:arguments="MODE_INHERITABLETHREADLOCAL"/>
+    
+    <task:annotation-driven scheduler="taskScheduler" />
+    <task:scheduler id="taskScheduler" pool-size="2"/>
+    
+    <security:global-method-security secured-annotations="enabled"/>
+    <security:http use-expressions="true" entry-point-ref="authenticationEntryPoint">
+        <security:form-login login-processing-url="/login" 
+                             authentication-success-handler-ref="authenticationSuccessHandler"
+                             authentication-failure-handler-ref="authenticationFailureHandler" />
+        
+        <security:anonymous enabled="false" />
+        <security:logout logout-url="/logout" success-handler-ref="logoutSuccessHandler"></security:logout>
+        <security:csrf disabled="true"></security:csrf>
+    </security:http>
+    <security:authentication-manager id="authenticationManager">
+        <security:authentication-provider user-service-ref="userValidationService">
+            
+        </security:authentication-provider>
+    </security:authentication-manager>
+</beans>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-4.0.xsd" xmlns:context="http://www.springframework.org/schema/context">
+
+    <context:annotation-config />
+    
+   <bean id="sessionFactoryConfiguration" class="com.source.config.SessfionFactoryConfiguration">
+       
+   </bean>
+   
+   <bean class="com.Manoj.framework.model.interceptors.ActiveAndModificationDatesInterceptor" id="activeAndModificationDatesInterceptor"></bean>
+   
+   <bean id="interceptorsList" class="java.util.ArrayList">
+       <constructor-arg>
+           <list>
+               <ref bean="activeAndModificationDatesInterceptor" />
+           </list>
+       </constructor-arg>
+   </bean>
+   
+   <bean id="fileStoragePath" class="java.lang.String">
+       <constructor-arg value="G:\Own Project\message\message\web\WEB-INF\images\" />
+   </bean>
+   <!-- <bean id="clientDomainName" class="java.lang.String">
+       <constructor-arg value="http://localhost:8090" />
+   </bean> -->  <!-- This security is temporarily disabled -->
+   
+   <bean id="createSpecimenForOrderExecuter" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <property name="corePoolSize" value="5" />
+        <property name="maxPoolSize" value="10" />
+        <property name="queueCapacity" value="100" />
+   </bean>
+   
+   <bean id="generatOrderReportExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <property name="corePoolSize" value="5" />
+        <property name="maxPoolSize" value="15" />
+        <property name="queueCapacity" value="100" />
+   </bean>
+
+   <bean class="com.Manoj.framework.search.Search" id="searchService" />
+   <bean class="com.Manoj.framework.exporter.service.ExporterService" id="exporterService" />
+   <bean class="com.Manoj.framework.search.ConversionService" id="conversionService" />
+</beans>
